@@ -2,469 +2,569 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Хранилище</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    :root {
-      --bg: var(--tg-theme-bg-color, #0f0f12);
-      --text: var(--tg-theme-text-color, #ffffff);
-      --hint: var(--tg-theme-hint-color, #8a8a9b);
-      --link: var(--tg-theme-link-color, #7ea8f2);
-      --button: var(--tg-theme-button-color, #3b82f6);
-      --button-text: var(--tg-theme-button-text-color, #ffffff);
-      --secondary-bg: var(--tg-theme-secondary-bg-color, #1a1a24);
-      --card-bg: rgba(255, 255, 255, 0.08);
-      --card-hover: rgba(255, 255, 255, 0.12);
-      --glass: blur(20px) saturate(180%);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      --radius: 16px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    :root { 
+      --bg:#0f0f0f; 
+      --card:#1c1c1e; 
+      --border:#2c2c2e; 
+      --text:#e0e0e0; 
+      --text-sec:#888; 
+      --accent:#007aff; 
+      --danger:#ff3b30; 
+      --success:#34c759; 
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-      padding-bottom: 100px;
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { 
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; 
+      background:var(--bg); 
+      color:var(--text); 
+      min-height:100vh; 
+      padding:0 16px 100px; 
     }
-
-    /* Header */
-    .header {
-      position: sticky; top: 0; z-index: 10;
-      background: var(--glass);
-      backdrop-filter: var(--glass);
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; justify-content: space-between;
+    .app { max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:10px; padding-top:12px; }
+    .header { display:flex; align-items:center; justify-content:space-between; padding:8px 0; margin-bottom:10px; }
+    .header h1 { font-size:1.3rem; font-weight:600; }
+    .btn { 
+      background:var(--card); 
+      border:1px solid var(--border); 
+      color:var(--text); 
+      padding:10px 14px; 
+      border-radius:10px; 
+      font-size:0.85rem; 
+      display:inline-flex; 
+      align-items:center; 
+      gap:6px; 
+      cursor:pointer; 
+      transition:0.2s;
     }
-    .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
-    .search-bar {
-      flex: 1; margin: 0 12px; padding: 10px 14px;
-      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px; color: var(--text); font-size: 14px; outline: none;
-      transition: var(--transition);
+    .btn:active { transform:scale(0.96); }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn-small { padding:6px 10px; font-size:0.75rem; }
+    .list { display:flex; flex-direction:column; gap:8px; }
+    .card { 
+      background:var(--card); 
+      border:1px solid var(--border); 
+      border-radius:14px; 
+      padding:12px; 
+      display:flex; 
+      align-items:center; 
+      gap:12px; 
+      cursor:pointer; 
+      transition:0.2s; 
     }
-    .search-bar:focus { border-color: var(--link); box-shadow: 0 0 0 3px rgba(126,168,242,0.2); }
-
-    /* Breadcrumbs */
-    .breadcrumbs {
-      padding: 12px 20px; font-size: 13px; color: var(--hint);
-      display: flex; flex-wrap: wrap; gap: 6px;
+    .card:active { background:#252528; }
+    .card .icon { 
+      width:40px; 
+      height:40px; 
+      background:rgba(0,122,255,0.1); 
+      border-radius:10px; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      color:var(--accent); 
+      flex-shrink:0;
+      font-size:1.2rem;
     }
-    .breadcrumbs span { cursor: pointer; transition: var(--transition); }
-    .breadcrumbs span:hover { color: var(--link); }
-    .breadcrumbs span.active { color: var(--text); font-weight: 500; }
-
-    /* Grid */
-    .grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 16px; padding: 0 20px;
+    .card .info { flex:1; min-width:0; }
+    .card .name { font-weight:500; overflow:hidden; text-overflow:ellipsis; }
+    .card .meta { font-size:0.75rem; color:var(--text-sec); margin-top:2px; }
+    .empty { text-align:center; padding:40px 20px; color:var(--text-sec); }
+    .breadcrumbs { 
+      display:flex; 
+      gap:4px; 
+      flex-wrap:wrap; 
+      font-size:0.8rem; 
+      color:var(--text-sec); 
+      margin-bottom:10px;
     }
-
-    /* Cards */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius);
-      padding: 16px;
-      display: flex; flex-direction: column; align-items: center;
-      text-align: center;
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative; overflow: hidden;
-      opacity: 0; transform: translateY(20px);
+    .breadcrumbs span { cursor:pointer; }
+    .breadcrumbs span:hover { color:var(--accent); }
+    
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; z-index:400; }
+    .overlay.active { display:block; }
+    
+    .modal { 
+      position:fixed; 
+      bottom:0;
+      left:0;
+      right:0;
+      background:var(--card); 
+      border-top:1px solid var(--border);
+      border-radius:20px 20px 0 0;
+      transform:translateY(100%);
+      transition:transform 0.3s ease;
+      z-index:500;
+      max-height:80vh;
+      overflow-y:auto;
+      padding:20px;
+      box-sizing:border-box;
     }
-    .card.visible { opacity: 1; transform: translateY(0); }
-    .card:hover { background: var(--card-hover); transform: translateY(-4px) scale(1.02); }
-    .card:active { transform: scale(0.96); }
-    .card-icon {
-      font-size: 32px; margin-bottom: 10px;
-      background: linear-gradient(135deg, var(--link), #8b5cf6);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 4px 12px rgba(126,168,242,0.3));
-    }
-    .card-name { font-size: 13px; font-weight: 500; word-break: break-word; margin-bottom: 4px; }
-    .card-meta { font-size: 11px; color: var(--hint); }
-    .card-badge {
-      position: absolute; top: 8px; right: 8px;
-      background: rgba(126,168,242,0.2); color: var(--link);
-      font-size: 10px; padding: 2px 6px; border-radius: 6px;
-    }
-
-    /* FAB */
-    .fab {
-      position: fixed; bottom: 24px; right: 24px;
-      width: 56px; height: 56px;
-      background: linear-gradient(135deg, var(--button), #6366f1);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: var(--button-text);
-      box-shadow: 0 8px 24px rgba(59,130,246,0.4);
-      cursor: pointer; transition: var(--transition);
-      z-index: 20;
-    }
-    .fab:hover { transform: scale(1.1) rotate(90deg); }
-    .fab:active { transform: scale(0.9); }
-
-    /* Modal */
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
-      opacity: 0; visibility: hidden; transition: var(--transition); z-index: 30;
-    }
-    .modal.open { opacity: 1; visibility: visible; }
-    .modal-content {
-      background: var(--secondary-bg); padding: 24px; border-radius: 20px;
-      width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
-      transform: scale(0.9); transition: var(--transition);
-    }
-    .modal.open .modal-content { transform: scale(1); }
-    .modal h2 { margin-bottom: 16px; font-size: 18px; }
-    .input-group { margin-bottom: 16px; }
-    .input-group input, .input-group select {
-      width: 100%; padding: 12px; background: var(--card-bg);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-      color: var(--text); font-size: 14px; outline: none;
-    }
-    .btn {
-      width: 100%; padding: 12px; border: none; border-radius: 12px;
-      background: var(--button); color: var(--button-text); font-weight: 500;
-      cursor: pointer; transition: var(--transition); margin-top: 8px;
-    }
-    .btn:hover { filter: brightness(1.1); }
-    .btn:active { transform: scale(0.98); }
-    .btn-secondary { background: var(--card-bg); color: var(--text); }
-
-    /* Upload Area */
-    .upload-area {
-      border: 2px dashed rgba(255,255,255,0.2); border-radius: 16px;
-      padding: 30px; text-align: center; margin-bottom: 16px;
-      transition: var(--transition); cursor: pointer;
-    }
-    .upload-area.dragover { border-color: var(--link); background: rgba(126,168,242,0.1); }
-    .upload-area i { font-size: 32px; color: var(--hint); margin-bottom: 10px; }
-    .upload-area p { color: var(--hint); font-size: 13px; }
-
-    /* Toast */
-    .toast-container { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); z-index: 40; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-    .toast {
-      background: var(--secondary-bg); padding: 12px 20px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow);
-      font-size: 13px; opacity: 0; transform: translateY(20px);
-      animation: toastIn 0.4s var(--ease-spring) forwards, toastOut 0.3s 2.7s forwards;
-    }
-    @keyframes toastIn { to { opacity: 1; transform: translateY(0); } }
-    @keyframes toastOut { to { opacity: 0; transform: translateY(-10px); } }
-
-    /* Skeleton */
-    .skeleton { background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-hover) 50%, var(--card-bg) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .skeleton-card { height: 120px; margin-bottom: 16px; }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center; padding: 60px 20px; color: var(--hint);
-    }
-    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state p { font-size: 14px; }
-
-    /* Progress */
-    .progress-bar { height: 4px; background: var(--card-bg); border-radius: 2px; overflow: hidden; margin-top: 8px; }
-    .progress-fill { height: 100%; background: var(--link); width: 0%; transition: width 0.3s; }
-
-    /* Scroll */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    .modal.active { transform:translateY(0); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:15px; }
+    .modal-header h3 { font-size:1rem; }
+    .modal-close { background:none; border:none; color:var(--text-sec); font-size:1.5rem; cursor:pointer; }
+    .modal-actions { display:flex; flex-direction:column; gap:10px; }
+    .menu-item { display:flex; align-items:center; gap:12px; padding:12px 16px; background:transparent; border:none; color:var(--text); font-size:0.95rem; cursor:pointer; border-radius:10px; width:100%; text-align:left; }
+    .menu-item:active { background:var(--border); }
+    .menu-item i { width:20px; }
+    .menu-item.danger { color:var(--danger); }
+    
+    .form-group { margin-bottom:15px; }
+    .form-group label { display:block; margin-bottom:8px; font-size:0.9rem; color:var(--text-sec); }
+    .form-group input { width:100%; padding:12px; background:#2a2a2a; border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:0.95rem; outline:none; box-sizing:border-box; }
+    .form-group input:focus { border-color:var(--accent); }
+    
+    .preview-modal { position:fixed; inset:0; background:rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index:500; }
+    .preview-modal.active { display:flex; }
+    .preview-modal img, .preview-modal video, .preview-modal audio { max-width:100%; max-height:80vh; }
+    .preview-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; z-index:510; background:rgba(0,0,0,0.5); width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+    
+    .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:#333; color:#fff; padding:12px 20px; border-radius:12px; font-size:0.9rem; opacity:0; transition:0.3s; z-index:999; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    
+    #fileInput { display:none; }
+    
+    .progress-item { padding:12px; background:#2a2a2a; border-radius:10px; margin-bottom:8px; }
+    .progress-item .name { font-size:0.9rem; margin-bottom:6px; }
+    .progress-item .bar { width:100%; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .progress-item .bar-fill { height:100%; background:var(--accent); width:0%; transition:width 0.3s; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1><i class="fa-solid fa-cloud"></i> Хранилище</h1>
-    <input type="text" class="search-bar" placeholder="Поиск файлов...">
-  </div>
-  <div class="breadcrumbs" id="breadcrumbs"></div>
-  <main class="grid" id="content">
-    <div class="skeleton skeleton-card"></div>
-    <div class="skeleton skeleton-card"></div>
-    <div class="skeleton skeleton-card"></div>
-    <div class="skeleton skeleton-card"></div>
-    <div class="skeleton skeleton-card"></div>
-    <div class="skeleton skeleton-card"></div>
-  </main>
-  <div class="fab" id="fab"><i class="fa-solid fa-plus"></i></div>
-  
-  <!-- Modals -->
-  <div class="modal" id="modal-folder">
-    <div class="modal-content">
-      <h2>Новая папка</h2>
-      <div class="input-group"><input type="text" id="new-folder-name" placeholder="Название папки"></div>
-      <button class="btn" id="create-folder-btn">Создать</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-folder')">Отмена</button>
+  <input type="file" id="fileInput" multiple>
+
+  <div class="app">
+    <div class="header">
+      <h1 id="title">Папки</h1>
+      <button class="btn btn-primary" onclick="selectAndUpload()" title="Загрузить файлы">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Загрузить
+      </button>
     </div>
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div id="content" class="list"></div>
   </div>
 
-  <div class="modal" id="modal-upload">
-    <div class="modal-content">
-      <h2>Загрузить файлы</h2>
-      <div class="upload-area" id="drop-zone">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-        <p>Перетащите файлы или нажмите для выбора</p>
-        <input type="file" id="file-input" multiple hidden>
-      </div>
-      <div id="upload-queue"></div>
-      <button class="btn btn-secondary" onclick="closeModal('modal-upload')">Закрыть</button>
+  <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- МОДАЛ: Выбор папки для загрузки -->
+  <div class="modal" id="uploadFolderModal">
+    <div class="modal-header">
+      <h3>Выбрать папку</h3>
+      <button class="modal-close" onclick="closeModal('uploadFolderModal')">×</button>
     </div>
+    <div class="modal-actions" id="uploadFolderList"></div>
   </div>
 
-  <div class="toast-container" id="toasts"></div>
+  <!-- МОДАЛ: Загрузка файлов -->
+  <div class="modal" id="uploadProgressModal">
+    <div class="modal-header">
+      <h3>Загрузка файлов</h3>
+    </div>
+    <div id="uploadProgressList"></div>
+  </div>
 
+  <!-- МОДАЛ: Меню файла -->
+  <div class="modal" id="fileMenuModal">
+    <div class="modal-header">
+      <h3 id="fileMenuTitle">Файл</h3>
+      <button class="modal-close" onclick="closeModal('fileMenuModal')">×</button>
+    </div>
+    <div class="modal-actions" id="fileMenuActions"></div>
+  </div>
+
+  <!-- МОДАЛ: Предпросмотр -->
+  <div class="preview-modal" id="previewModal">
+    <span class="preview-close" onclick="closePreview()">×</span>
+    <img id="previewImage" style="display:none;">
+    <video id="previewVideo" controls playsinline style="display:none;"></video>
+    <audio id="previewAudio" controls playsinline style="display:none;"></audio>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // ── Init Telegram WebApp ──
-    const tg = window.Telegram.WebApp;
+    const tg = Telegram.WebApp;
     tg.ready();
     tg.expand();
-    tg.enableClosingConfirmation();
-    
-    // ── State ──
-    let state = {
-      path: [], // [{id, name}]
-      currentFolderId: null,
-      initData: tg.initData || new URLSearchParams(window.location.search).get('dev_user_id') ? `dev_user_id=${new URLSearchParams(window.location.search).get('dev_user_id')}` : '',
-      isLoading: false
-    };
+    tg.setHeaderColor(tg.themeParams.secondary_bg_color || '#1c1c1e');
+    tg.setBackgroundColor(tg.themeParams.bg_color || '#0f0f0f');
 
-    // ── DOM ──
-    const els = {
-      content: document.getElementById('content'),
-      breadcrumbs: document.getElementById('breadcrumbs'),
-      fab: document.getElementById('fab'),
-      modals: { folder: document.getElementById('modal-folder'), upload: document.getElementById('modal-upload') },
-      inputs: { folderName: document.getElementById('new-folder-name'), fileInput: document.getElementById('file-input') },
-      buttons: { createFolder: document.getElementById('create-folder-btn') },
-      dropZone: document.getElementById('drop-zone'),
-      uploadQueue: document.getElementById('upload-queue'),
-      toasts: document.getElementById('toasts')
-    };
-
-    // ── Helpers ──
-    const fetchAPI = async (url, options = {}) => {
-      const headers = { ...options.headers, 'Content-Type': 'application/json' };
-      if (state.initData && !options.formData) headers['X-Telegram-Init-Data'] = state.initData;
-      const res = await fetch(url, { ...options, headers });
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    };
-
-    const showToast = (msg, type = 'info') => {
-      const el = document.createElement('div');
-      el.className = 'toast';
-      el.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check' : type === 'error' ? 'xmark' : 'info'}"></i> ${msg}`;
-      els.toasts.appendChild(el);
-      setTimeout(() => el.remove(), 3000);
-      tg.HapticFeedback.notificationOccurred(type === 'error' ? 'error' : 'success');
-    };
-
-    const openModal = (id) => {
-      els.modals[id].classList.add('open');
-      tg.HapticFeedback.impactOccurred('light');
-    };
-    const closeModal = (id) => els.modals[id].classList.remove('open');
-
-    const formatSize = (bytes) => {
-      if (bytes === 0) return '0 B';
-      const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    };
-
-    // ── Render ──
-    const renderBreadcrumbs = () => {
-      els.breadcrumbs.innerHTML = `<span onclick="navigateTo(0)">Главная</span>`;
-      state.path.forEach((p, i) => {
-        els.breadcrumbs.innerHTML += ` / <span class="${i === state.path.length - 1 ? 'active' : ''}" onclick="navigateTo(${i + 1})">${p.name}</span>`;
-      });
-    };
-
-    const renderGrid = (items, type = 'folders') => {
-      if (state.isLoading) return;
-      els.content.innerHTML = '';
-      if (!items.length) {
-        els.content.innerHTML = `<div class="empty-state"><i class="fa-solid ${type === 'folders' ? 'fa-folder-open' : 'fa-file'}"></i><p>${type === 'folders' ? 'Папок пока нет' : 'Файлов нет'}</p></div>`;
-        return;
-      }
-      items.forEach((item, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.transitionDelay = `${i * 50}ms`;
-        const isFolder = type === 'folders';
-        const icon = isFolder ? 'fa-folder' : 'fa-file';
-        card.innerHTML = `
-          <i class="card-icon fa-solid ${icon}"></i>
-          <div class="card-name">${item.name}</div>
-          <div class="card-meta">${isFolder ? (item.is_public ? '🌐 Публичная' : '🔒 Приватная') : formatSize(item.size || 0)}</div>
-        `;
-        card.onclick = () => {
-          tg.HapticFeedback.impactOccurred('medium');
-          isFolder ? openFolder(item.id) : downloadFile(item.id, item.name, item.type);
-        };
-        els.content.appendChild(card);
-        setTimeout(() => card.classList.add('visible'), 10);
-      });
-    };
-
-    // ── Navigation ──
-    const loadFolder = async (folderId = null) => {
-      state.isLoading = true;
-      els.content.innerHTML = Array(6).fill('<div class="skeleton skeleton-card"></div>').join('');
-      try {
-        let res;
-        if (!folderId || folderId === 'root') {
-          res = await fetchAPI('/api/folders?parent_id=null');
-          state.currentFolderId = null;
-          state.path = [];
-        } else {
-          res = await fetchAPI(`/api/folders?parent_id=${folderId}`);
-          state.currentFolderId = folderId;
-        }
-        renderBreadcrumbs();
-        renderGrid(res.folders || [], 'folders');
-        // Load files for current folder
-        if (folderId) {
-          const filesRes = await fetchAPI(`/api/files/${folderId}?page=1&per_page=100`);
-          if (filesRes.files?.length) renderGrid(filesRes.files, 'files');
-        }
-      } catch (e) {
-        showToast('Ошибка загрузки: ' + e.message, 'error');
-      } finally {
-        state.isLoading = false;
-      }
-    };
-
-    const openFolder = (id) => {
-      const folder = state.path[state.path.length - 1];
-      if (!folder || folder.id !== id) {
-        state.path.push({ id, name: 'Папка' }); // placeholder, will update on load
-      }
-      loadFolder(id);
-    };
-
-    const navigateTo = (step) => {
-      state.path = state.path.slice(0, step);
-      const targetId = step === 0 ? 'root' : state.path[step - 1].id;
-      loadFolder(targetId);
-    };
-
-    // ── Actions ──
-    const createFolder = async () => {
-      const name = els.inputs.folderName.value.trim();
-      if (!name) return showToast('Введите название', 'error');
-      try {
-        await fetchAPI('/api/folders', {
-          method: 'POST',
-          body: JSON.stringify({ name, is_public: false }),
-          formData: false
-        });
-        closeModal('modal-folder');
-        els.inputs.folderName.value = '';
-        showToast('Папка создана', 'success');
-        loadFolder(state.currentFolderId || 'root');
-      } catch (e) {
-        showToast('Ошибка создания: ' + e.message, 'error');
-      }
-    };
-
-    const uploadFiles = async (files) => {
-      if (!files.length) return;
-      const folderId = state.currentFolderId || (await fetchAPI('/api/folders?parent_id=null')).folders[0]?.id;
-      if (!folderId) return showToast('Сначала создайте папку', 'error');
-      
-      els.uploadQueue.innerHTML = '<p>Загрузка...</p>';
-      for (const file of files) {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('folder_id', folderId);
-        form.append('folder_name', state.path[state.path.length - 1]?.name || 'Корень');
-        
-        try {
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'X-Telegram-Init-Data': state.initData },
-            body: form
-          });
-          if (!res.ok) throw new Error(await res.text());
-          showToast(`✅ ${file.name}`, 'success');
-        } catch (e) {
-          showToast(`❌ ${file.name}: ${e.message}`, 'error');
-        }
-      }
-      closeModal('modal-upload');
-      loadFolder(folderId);
-    };
-
-    const downloadFile = async (fileId, name, type) => {
-      tg.HapticFeedback.notificationOccurred('warning');
-      try {
-        const res = await fetchAPI(`/api/download/${fileId}`);
-        const a = document.createElement('a');
-        a.href = res.url;
-        a.download = res.file_name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        showToast('Загрузка начата', 'success');
-      } catch (e) {
-        showToast('Ошибка скачивания: ' + e.message, 'error');
-      }
-    };
-
-    // ── Events ──
-    els.fab.onclick = () => {
-      tg.HapticFeedback.impactOccurred('heavy');
-      openModal('upload');
-    };
-
-    els.dropZone.onclick = () => els.inputs.fileInput.click();
-    els.inputs.fileInput.onchange = (e) => uploadFiles(e.target.files);
-    els.dropZone.ondragover = (e) => { e.preventDefault(); els.dropZone.classList.add('dragover'); };
-    els.dropZone.ondragleave = () => els.dropZone.classList.remove('dragover');
-    els.dropZone.ondrop = (e) => {
-      e.preventDefault();
-      els.dropZone.classList.remove('dragover');
-      uploadFiles(e.dataTransfer.files);
-    };
-
-    els.buttons.createFolder.onclick = createFolder;
-    document.getElementById('fab').onclick = () => openModal('modal-folder'); // Override for demo, normally separate buttons
-
-    // Search
-    document.querySelector('.search-bar').addEventListener('input', debounce(async (e) => {
-      const q = e.target.value.trim();
-      if (!q) return loadFolder(state.currentFolderId || 'root');
-      try {
-        const res = await fetchAPI(`/api/search?q=${encodeURIComponent(q)}`);
-        renderGrid(res.files || [], 'files');
-      } catch (err) { /* ignore empty */ }
-    }, 300));
-
-    function debounce(fn, ms) {
-      let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+    const initData = tg.initData;
+    if (!initData) {
+      document.body.innerHTML = '<div class="empty">Откройте через Telegram бота</div>';
+      throw new Error('No initData');
     }
 
-    // Back Button
-    tg.BackButton.onClick(() => {
-      if (state.path.length > 0) navigateTo(state.path.length - 1);
-      else tg.close();
-    });
-    tg.onEvent('backButtonClicked', tg.BackButton.onClick);
+    const state = {
+      folderId: null,
+      folderName: 'Папки',
+      parentStack: [],
+      isLoading: false,
+      folders: []
+    };
 
-    // Init
-    loadFolder('root');
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadFolder(state.currentFolderId || 'root'); });
+    const $ = id => document.getElementById(id);
+    
+    function showToast(msg, type = 'info') {
+      const t = $('toast');
+      t.textContent = msg;
+      t.style.background = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : '#333';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function getFileIcon(type) {
+      const icons = { 
+        photo: 'fa-image', 
+        video: 'fa-video', 
+        audio: 'fa-music', 
+        voice: 'fa-microphone', 
+        document: 'fa-file-lines', 
+        sticker: 'fa-note-sticky', 
+        animation: 'fa-film' 
+      };
+      return `fa-solid ${icons[type] || 'fa-file'}`;
+    }
+
+    function openModal(id) {
+      $('overlay').classList.add('active');
+      $(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      $(id).classList.remove('active');
+      if (!document.querySelector('.modal.active')) {
+        $('overlay').classList.remove('active');
+      }
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+      $('overlay').classList.remove('active');
+    }
+
+    async function api(url, opts = {}) {
+      opts.headers = { 'X-Telegram-Init-Data': initData, ...(opts.headers || {}) };
+      if (opts.body && !(opts.body instanceof FormData)) {
+        if (typeof opts.body === 'object') {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(opts.body);
+        }
+      }
+      const res = await fetch(url, opts);
+      const responseText = await res.text();
+      if (!res.ok) {
+        let detail = res.statusText;
+        try { const data = JSON.parse(responseText); detail = data.detail || detail; } catch {}
+        throw new Error(detail);
+      }
+      try { return JSON.parse(responseText); } catch { return {}; }
+    }
+
+    function renderBreadcrumbs() {
+      const bc = $('breadcrumbs');
+      if (!state.folderId) { bc.innerHTML = ''; return; }
+      let html = `<span onclick="goRoot()" style="color:var(--accent);">Главная</span>`;
+      state.parentStack.forEach(p => html += ` / <span onclick="openFolder(${p.id},'${escapeHtml(p.name)}')" style="color:var(--accent);">${escapeHtml(p.name).substring(0, 15)}</span>`);
+      if (state.parentStack.length > 0) html += ` /`;
+      html += ` <b>${escapeHtml(state.folderName).substring(0, 20)}</b>`;
+      bc.innerHTML = html;
+    }
+
+    window.goRoot = () => { state.folderId = null; state.parentStack = []; state.folderName = 'Папки'; loadFolders(); };
+
+    async function loadFolders() {
+      state.folderId = null;
+      state.parentStack = [];
+      state.folderName = 'Папки';
+      $('title').textContent = 'Папки';
+      renderBreadcrumbs();
+      $('content').innerHTML = '<div class="empty">Загружаю папки...</div>';
+      try {
+        const data = await api(' http://0.0.0.0:8080/api/folders');
+        state.folders = data.folders || [];
+        if (state.folders.length === 0) { 
+          $('content').innerHTML = '<div class="empty">Папок пока нет</div>'; 
+          return; 
+        }
+        let html = '';
+        state.folders.forEach(f => {
+          const status = f.is_public ? 'Публичная' : 'Приватная';
+          html += `
+            <div class="card" onclick="openFolder(${f.id}, '${escapeHtml(f.name)}', true)">
+              <div class="icon"><i class="fa-solid fa-folder"></i></div>
+              <div class="info">
+                <div class="name">${escapeHtml(f.name)}</div>
+                <div class="meta">${status}</div>
+              </div>
+            </div>
+          `;
+        });
+        $('content').innerHTML = html;
+      } catch (e) {
+        showToast('Ошибка загрузки', 'error');
+        $('content').innerHTML = '<div class="empty">Ошибка загрузки</div>';
+      }
+    }
+
+    async function openFolder(id, name, pushStack = true) {
+      if (pushStack && state.folderId) state.parentStack.push({ id: state.folderId, name: state.folderName });
+      state.folderId = id;
+      state.folderName = name;
+      $('title').textContent = name;
+      renderBreadcrumbs();
+      $('content').innerHTML = '<div class="empty">Загружаю файлы...</div>';
+      await loadFiles();
+    }
+
+    async function loadFiles() {
+      if (!state.folderId || state.isLoading) return;
+      state.isLoading = true;
+      try {
+        const data = await api(`/api/files/${state.folderId}`);
+        const files = data.files || [];
+        if (files.length === 0) { 
+          $('content').innerHTML = '<div class="empty">Папка пуста</div>'; 
+          state.isLoading = false; 
+          return; 
+        }
+        let html = '';
+        files.forEach(f => {
+          const icon = `<i class="${getFileIcon(f.type)}"></i>`;
+          html += `
+            <div class="card" onclick="previewFile(${f.id}, '${f.type}', '${escapeHtml(f.name)}')">
+              <div class="icon">${icon}</div>
+              <div class="info">
+                <div class="name">${escapeHtml(f.name)}</div>
+                <div class="meta">${formatSize(f.size)} • ${f.type}</div>
+              </div>
+              <button class="btn btn-small" onclick="event.stopPropagation(); showFileMenu(${f.id}, '${escapeHtml(f.name)}')">
+                <i class="fa-solid fa-ellipsis"></i>
+              </button>
+            </div>
+          `;
+        });
+        $('content').innerHTML = html;
+      } catch (e) {
+        showToast('Ошибка', 'error');
+        $('content').innerHTML = '<div class="empty">Ошибка</div>';
+      }
+      state.isLoading = false;
+    }
+
+    function selectAndUpload() {
+      if (state.folders.length === 0) {
+        showToast('Сначала создайте папку', 'error');
+        return;
+      }
+
+      const list = $('uploadFolderList');
+      list.innerHTML = '';
+
+      state.folders.forEach(f => {
+        const btn = document.createElement('button');
+        btn.className = 'menu-item';
+        btn.innerHTML = `<i class="fa-solid fa-folder"></i><span>${escapeHtml(f.name)}</span>`;
+        btn.onclick = () => {
+          closeModal('uploadFolderModal');
+          uploadToFolder(f.id, f.name);
+        };
+        list.appendChild(btn);
+      });
+
+      openModal('uploadFolderModal');
+    }
+
+    function uploadToFolder(folderId, folderName) {
+      $('fileInput').folderId = folderId;
+      $('fileInput').folderName = folderName;
+      $('fileInput').click();
+    }
+
+    $('fileInput').onchange = async (e) => {
+      const files = e.target.files;
+      const folderId = $('fileInput').folderId;
+      const folderName = $('fileInput').folderName;
+
+      if (!files.length || !folderId) return;
+
+      showToast(`Загружаю ${files.length} файл(ов)...`);
+      openModal('uploadProgressModal');
+
+      const progressList = $('uploadProgressList');
+      progressList.innerHTML = '';
+
+      let uploaded = 0;
+
+      for (let file of files) {
+        const progressId = 'progress_' + Math.random().toString(36).substring(7);
+        const progressHtml = `
+          <div class="progress-item" id="${progressId}">
+            <div class="name">${escapeHtml(file.name)}</div>
+            <div class="bar">
+              <div class="bar-fill" id="${progressId}_fill"></div>
+            </div>
+          </div>
+        `;
+        progressList.insertAdjacentHTML('beforeend', progressHtml);
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('folder_id', folderId);
+          formData.append('folder_name', folderName);
+
+          const uploadUrl = `/api/upload`;
+          
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percent = (e.loaded / e.total) * 100;
+              const fillEl = document.getElementById(progressId + '_fill');
+              if (fillEl) fillEl.style.width = percent + '%';
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+              const fillEl = document.getElementById(progressId + '_fill');
+              if (fillEl) fillEl.style.width = '100%';
+              uploaded++;
+            } else {
+              const item = document.getElementById(progressId);
+              if (item) item.style.color = 'var(--danger)';
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            const item = document.getElementById(progressId);
+            if (item) item.style.color = 'var(--danger)';
+          });
+
+          xhr.open('POST', uploadUrl);
+          xhr.setRequestHeader('X-Telegram-Init-Data', initData);
+          xhr.send(formData);
+
+          await new Promise((resolve, reject) => {
+            xhr.addEventListener('load', resolve);
+            xhr.addEventListener('error', reject);
+          });
+
+        } catch (err) {
+          console.error('Upload error:', err);
+          const item = document.getElementById(progressId);
+          if (item) item.style.color = 'var(--danger)';
+        }
+      }
+
+      setTimeout(() => {
+        closeModal('uploadProgressModal');
+        showToast(`Загружено ${uploaded}/${files.length} файлов`, 'success');
+        $('fileInput').value = '';
+        loadFiles();
+      }, 500);
+    };
+
+    function showFileMenu(fileId, fileName) {
+      $('fileMenuTitle').textContent = `Файл: ${fileName.substring(0, 20)}`;
+      $('fileMenuActions').innerHTML = `
+        <button class="menu-item" onclick="downloadFile(${fileId}, '${escapeHtml(fileName)}')">
+          <i class="fa-solid fa-download"></i> <span>Скачать</span>
+        </button>
+        <button class="menu-item" onclick="previewFile(${fileId}, 'auto', '${escapeHtml(fileName)}')">
+          <i class="fa-solid fa-eye"></i> <span>Предпросмотр</span>
+        </button>
+        <button class="menu-item danger" onclick="deleteFile(${fileId})">
+          <i class="fa-solid fa-trash"></i> <span>Удалить</span>
+        </button>
+      `;
+      openModal('fileMenuModal');
+    }
+
+    async function previewFile(fileId, fileType, fileName) {
+      const modal = $('previewModal');
+      $('previewImage').style.display = 'none';
+      $('previewVideo').style.display = 'none';
+      $('previewAudio').style.display = 'none';
+      modal.classList.add('active');
+      try {
+        const data = await api(`/api/download/${fileId}`);
+        if (!data.url) throw new Error('No URL');
+        const type = data.file_type || fileType;
+        if (type === 'photo' || type === 'image') {
+          $('previewImage').src = data.url;
+          $('previewImage').style.display = 'block';
+        } else if (type === 'video') {
+          $('previewVideo').src = data.url;
+          $('previewVideo').style.display = 'block';
+        } else if (type === 'audio' || type === 'voice') {
+          $('previewAudio').src = data.url;
+          $('previewAudio').style.display = 'block';
+        } else {
+          downloadFile(fileId, fileName, data.url);
+          closePreview();
+        }
+      } catch (e) {
+        showToast('Ошибка', 'error');
+        closePreview();
+      }
+    }
+
+    function closePreview() {
+      $('previewModal').classList.remove('active');
+      $('previewVideo').pause();
+      $('previewAudio').pause();
+    }
+
+    async function downloadFile(fileId, fileName, url) {
+      try {
+        closeModal('fileMenuModal');
+        if (!url) {
+          const data = await api(`/api/download/${fileId}`);
+          url = data.url;
+        }
+        if (url) {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          showToast('Загрузка началась', 'success');
+        }
+      } catch (e) {
+        showToast('Ошибка', 'error');
+      }
+    }
+
+    async function deleteFile(fileId) {
+      if (!confirm('Удалить файл?')) return;
+      try {
+        closeModal('fileMenuModal');
+        await api('/api/action', { method: 'POST', body: { action: 'delete', file_ids: [fileId] } });
+        showToast('Удалено', 'success');
+        await loadFiles();
+      } catch (e) {
+        showToast('Ошибка', 'error');
+      }
+    }
+
+    loadFolders();
   </script>
 </body>
 </html>
